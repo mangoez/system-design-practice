@@ -32,7 +32,6 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/str", get(get_str))
-        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
         .layer(middleware::from_fn(move |req, next: Next| {
             let limiter = rate_limiter.clone();
             async move {
@@ -41,7 +40,8 @@ async fn main() -> anyhow::Result<()> {
                 }
                 next.run(req).await
             }
-        }));
+        }))
+        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
 
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", SERVER_PORT)).await?;
     info!(addr = %listener.local_addr()?, "listening");
