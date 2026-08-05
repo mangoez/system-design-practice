@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use axum::{Router, routing::get};
 use tokio::time::sleep;
-use tower_http::trace::TraceLayer;
 use tower::ServiceBuilder;
+use tower_http::trace::TraceLayer;
 use tracing::{Level, info, instrument};
 
 const SERVER_PORT: u16 = 8080;
@@ -24,14 +24,11 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/str", get(get_str))
-        .layer(
-            ServiceBuilder::new()
-                .layer(TraceLayer::new_for_http())
-        );
+        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
 
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", SERVER_PORT)).await?;
     info!(addr = %listener.local_addr()?, "listening");
-    
+
     axum::serve(listener, app).await?;
     Ok(())
 }
