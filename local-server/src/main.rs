@@ -1,14 +1,20 @@
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
-use axum::{Router, routing::get};
+use axum::{
+    Router,
+    http::StatusCode,
+    middleware::{self, Next},
+    response::IntoResponse,
+    routing::get,
+};
+use rate_limiter::{RateLimiterLayer, TokenBucketRateLimiter};
 use tokio::time::sleep;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
-use tracing::{Level, info, instrument};
+use tracing::{Level, info};
 
 const SERVER_PORT: u16 = 8080;
 
-#[instrument]
 async fn get_str() -> &'static str {
     sleep(Duration::from_millis(100)).await;
     "AH!"
@@ -22,9 +28,20 @@ async fn main() -> anyhow::Result<()> {
         .with_max_level(Level::DEBUG)
         .init();
 
+    let rate_limiter = Arc::new(RateLimiterLayer::new(TokenBucketRateLimiter::new(5, 1)));
+
     let app = Router::new()
         .route("/str", get(get_str))
-        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
+        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
+        .layer(middleware::from_fn(move |req, next: Next| {
+            let limiter = rate_limiter.clone();
+            async move {
+                if !limiter.try_acquire() {
+                    return StatusCode::TOO_MANY_REQUESTS.into_response();
+                }
+                next.run(req).await
+            }
+        }));
 
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", SERVER_PORT)).await?;
     info!(addr = %listener.local_addr()?, "listening");

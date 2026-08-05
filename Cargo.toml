@@ -1,3 +1,3 @@
 [workspace]
 resolver = "3"
-members = ["local-server"]
+members = ["local-server", "rate-limiter"]
