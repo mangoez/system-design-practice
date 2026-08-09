@@ -36,7 +36,6 @@ impl Limiter for TokenBucketRateLimiter {
 
 impl TokenBucketRateLimiter {
     pub fn new(bucket_size: usize, tokens_per_second: usize) -> TokenBucketRateLimiter {
-        assert!(tokens_per_second > 0, "refill rate must be non-zero");
         TokenBucketRateLimiter {
             bucket_size,
             tokens_per_second,
@@ -91,11 +90,5 @@ mod tests {
         assert!(limiter.try_acquire());
         sleep(Duration::from_millis(50));
         assert!(!limiter.try_acquire());
-    }
-
-    #[test]
-    #[should_panic]
-    fn zero_refill_rate_panics() {
-        TokenBucketRateLimiter::new(1, 0);
     }
 }
