@@ -7,7 +7,7 @@ use axum::{
     response::IntoResponse,
     routing::get,
 };
-use rate_limiter::{RateLimiterLayer, TokenBucketRateLimiter};
+use rate_limiter::{RateLimiterLayer, leaky_bucket::LeakyBucketRateLimiter};
 use tokio::time::sleep;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
@@ -28,7 +28,7 @@ async fn main() -> anyhow::Result<()> {
         .with_max_level(Level::DEBUG)
         .init();
 
-    let rate_limiter = Arc::new(RateLimiterLayer::new(TokenBucketRateLimiter::new(5, 1)));
+    let rate_limiter = Arc::new(RateLimiterLayer::new(LeakyBucketRateLimiter::new(5, 4)));
 
     let app = Router::new()
         .route("/str", get(get_str))
