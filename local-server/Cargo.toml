@@ -12,3 +12,4 @@ tower-http = { version = "0.7.0", features = ["trace"] }
 tracing = "0.1.44"
 tracing-subscriber = "0.3.23"
 rate-limiter = {version = "0.1.0", path = "../rate-limiter"}
+consistent-hashing = {version = "0.1.0", path = "../consistent-hashing"}
