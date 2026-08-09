@@ -7,7 +7,7 @@ use axum::{
     response::IntoResponse,
     routing::get,
 };
-use rate_limiter::{RateLimiterLayer, TokenBucketRateLimiter};
+use rate_limiter::{RateLimiterLayer, token_bucket::TokenBucketRateLimiter};
 use tokio::time::sleep;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
