@@ -1,4 +1,4 @@
-use std::{cmp, time::{Duration, Instant}};
+use std::{time::{Duration, Instant}};
 
 use crate::Limiter;
 
